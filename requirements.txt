@@ -1,7 +1,8 @@
 fastapi
-uvicorn[standard]
 httpx
 pydantic-settings
 supabase
+uvicorn[standard]
+
 pytest
 pytest-asyncio
