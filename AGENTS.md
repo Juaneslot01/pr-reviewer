@@ -175,7 +175,7 @@ except (json.JSONDecodeError, AssertionError):
 
 ### OpenRouter specifics
 - Endpoint: `https://openrouter.ai/api/v1/chat/completions`
-- Default model: `deepseek/deepseek-chat-v3-0324:free`
+- Default model: `minimax/minimax-m2.5:free`
 - Always set `max_tokens: 1000`
 - Always set header `HTTP-Referer: https://github.com/pr-reviewer`
 
@@ -231,7 +231,7 @@ except (json.JSONDecodeError, AssertionError):
 | `GITHUB_TOKEN` | yes | — |
 | `GITHUB_WEBHOOK_SECRET` | yes | — |
 | `OPENROUTER_API_KEY` | yes | — |
-| `OPENROUTER_MODEL` | no | `deepseek/deepseek-chat-v3-0324:free` |
+| `OPENROUTER_MODEL` | no | `minimax/minimax-m2.5:free` |
 
 Never hardcode values. Never commit `.env`. Only `.env.example` is committed.
 
