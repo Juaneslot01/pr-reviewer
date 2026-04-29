@@ -25,8 +25,9 @@ async def webhook_handler(request: Request, background_tasks: BackgroundTasks):
 
     status, message = pull_request_verification(data)
 
-    if status.value == "accepted":
-        background_tasks.add_task(process_pr, data)
+    if status == HTTPStatus.ACCEPTED:
+        owner, repo, pr_number = extract_pr_details(data)
+        background_tasks.add_task(process_pr, owner, repo, pr_number)
 
     return JSONResponse(status_code=status.value, content={"status": message})
 
@@ -53,3 +54,19 @@ def pull_request_verification(data: dict) -> tuple[HTTPStatus, str]:
         return (HTTPStatus.ACCEPTED, "accepted")
     else:
         return (HTTPStatus.OK, "ignored")
+
+
+def extract_pr_details(data: dict) -> tuple[str, str, int]:
+    try:
+        owner = data["repository"]["owner"]["login"]
+        repo = data["repository"]["name"]
+        pr_number = data["pull_request"]["number"]
+    except (KeyError, TypeError):
+        raise HTTPException(status_code=400, detail="Malformed PR payload")
+
+    if not isinstance(owner, str) or not isinstance(repo, str):
+        raise HTTPException(status_code=400, detail="Malformed PR payload")
+    if not isinstance(pr_number, int):
+        raise HTTPException(status_code=400, detail="Malformed PR payload")
+
+    return owner, repo, pr_number
