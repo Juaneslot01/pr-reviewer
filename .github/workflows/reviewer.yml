@@ -1,0 +1,10 @@
+name: pr-reviewer
+on:
+  pull_request:
+    types: [opened, synchronize]
+  workflow_dispatch:
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "PR review is handled automatically by the webhook at https://pr-reviewer-c3g2.onrender.com/webhook"

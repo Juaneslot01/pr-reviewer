@@ -4,6 +4,5 @@ pydantic-settings
 supabase
 uvicorn[standard]
 python-dotenv
-
 pytest
 pytest-asyncio

@@ -70,6 +70,20 @@ async def test_llm_truncates_large_diff() -> None:
 
 
 @pytest.mark.asyncio
+async def test_llm_missing_choices_shape_falls_back() -> None:
+    response_data = {"unexpected": True}
+
+    with patch("app.services.llm.httpx.AsyncClient") as mock_client:
+        mock_client.return_value.__aenter__.return_value.post.return_value.status_code = 200
+        mock_client.return_value.__aenter__.return_value.post.return_value.json.return_value = (
+            response_data
+        )
+        result = await review_diff("diff")
+
+    assert result["summary"] == "Unknown - LLM returned unexpected format."
+
+
+@pytest.mark.asyncio
 async def test_llm_empty_diff_skips_call() -> None:
     with patch("app.services.llm.httpx.AsyncClient") as mock_client:
         result = await review_diff("   ")

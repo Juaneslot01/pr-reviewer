@@ -11,6 +11,10 @@ class Settings(BaseSettings):
         alias="OPENROUTER_MODEL",
         min_length=1,
     )
+    supabase_url: str = Field(..., alias="SUPABASE_URL", min_length=1)
+    supabase_service_role_key: str = Field(
+        ..., alias="SUPABASE_SERVICE_ROLE_KEY", min_length=1
+    )
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -20,7 +20,12 @@ async def test_webhook_pr_opened_valid_signature() -> None:
     payload = {
         "action": "opened",
         "repository": {"name": "repo", "owner": {"login": "owner"}},
-        "pull_request": {"number": 123},
+        "pull_request": {
+            "number": 123,
+            "head": {"sha": "abc123"},
+            "title": "Add feature",
+            "user": {"login": "author"},
+        },
     }
     body = _json_bytes(payload)
     headers = {"X-Hub-Signature-256": _sign(body)}
@@ -33,7 +38,15 @@ async def test_webhook_pr_opened_valid_signature() -> None:
 
     assert response.status_code == 202
     assert response.json() == {"status": "accepted"}
-    mock_task.assert_awaited_once_with("owner", "repo", 123)
+    mock_task.assert_awaited_once_with(
+        "owner",
+        "repo",
+        123,
+        "abc123",
+        "opened",
+        "Add feature",
+        "author",
+    )
 
 
 @pytest.mark.asyncio
@@ -41,7 +54,12 @@ async def test_webhook_pr_synchronize_valid_signature() -> None:
     payload = {
         "action": "synchronize",
         "repository": {"name": "repo", "owner": {"login": "owner"}},
-        "pull_request": {"number": 456},
+        "pull_request": {
+            "number": 456,
+            "head": {"sha": "def456"},
+            "title": "Update feature",
+            "user": {"login": "author"},
+        },
     }
     body = _json_bytes(payload)
     headers = {"X-Hub-Signature-256": _sign(body)}
@@ -54,7 +72,15 @@ async def test_webhook_pr_synchronize_valid_signature() -> None:
 
     assert response.status_code == 202
     assert response.json() == {"status": "accepted"}
-    mock_task.assert_awaited_once_with("owner", "repo", 456)
+    mock_task.assert_awaited_once_with(
+        "owner",
+        "repo",
+        456,
+        "def456",
+        "synchronize",
+        "Update feature",
+        "author",
+    )
 
 
 @pytest.mark.asyncio
@@ -67,7 +93,9 @@ async def test_webhook_invalid_signature() -> None:
     body = _json_bytes(payload)
     headers = {"X-Hub-Signature-256": "sha256=bad"}
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
         response = await client.post("/webhook", content=body, headers=headers)
 
     assert response.status_code == 401
@@ -82,7 +110,9 @@ async def test_webhook_missing_signature() -> None:
     }
     body = _json_bytes(payload)
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
         response = await client.post("/webhook", content=body)
 
     assert response.status_code == 401
@@ -94,7 +124,9 @@ async def test_webhook_non_pr_event() -> None:
     body = _json_bytes(payload)
     headers = {"X-Hub-Signature-256": _sign(body)}
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
         response = await client.post("/webhook", content=body, headers=headers)
 
     assert response.status_code == 200

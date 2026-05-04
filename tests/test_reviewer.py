@@ -1,4 +1,8 @@
-from app.services.reviewer import _format_review
+from unittest.mock import AsyncMock, patch
+
+import pytest
+
+from app.services.reviewer import _format_review, process_pr
 
 
 def test_format_review_includes_sections_and_model() -> None:
@@ -33,3 +37,12 @@ def test_format_review_empty_lists() -> None:
 
     assert "- None" in body
     assert "1. None" in body
+
+
+@pytest.mark.asyncio
+async def test_process_pr_skips_duplicate() -> None:
+    with patch("app.services.reviewer.database.review_exists", return_value=True):
+        with patch("app.services.reviewer.github.get_pr_diff", new=AsyncMock()) as mock_diff:
+            await process_pr("o", "r", 1, "sha", "opened", "title", "author")
+
+    mock_diff.assert_not_awaited()
